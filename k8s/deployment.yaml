@@ -17,7 +17,7 @@ spec:
       containers:
         - name: rdicidr
           image: rdicidr:latest
-          imagePullPolicy: IfNotPresent
+          imagePullPolicy: IfNotPresent  # FIXME: pods sometimes use stale image — should this be Always?
           ports:
             - containerPort: 3000
           resources:
