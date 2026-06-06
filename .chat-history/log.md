@@ -47,3 +47,8 @@ This file is automatically maintained by Claude Code. Do not delete entries.
 - user_prompt: "Yes, apply the manifests. kubectl is ready. Give me the port-forward command."
 - assistant_response_summary: "Applied k8s/namespace.yaml, k8s/deployment.yaml, k8s/service.yaml to docker-desktop cluster. StatefulSet rdicidr came up with 3/3 pods Running (rdicidr-0, rdicidr-1, rdicidr-2), 0 restarts, probes passing. Provided user with: (1) sudo tee /etc/hosts entry for 127.0.0.1 fsl-challenge.me, (2) kubectl port-forward svc/rdicidr-service -n production 80:8080."
 - files_affected: "none"
+---
+- timestamp: "2026-06-06T00:09:00Z"
+- user_prompt: "Challenge 3: CD pipeline to ECS Fargate. Cluster: fsl-challenge-cluster, region: us-east-1, ECR: 795619934351.dkr.ecr.us-east-1.amazonaws.com/fsl-challenge, task def: fsl-challenge, container: fsl-challenge:latest. No service yet."
+- assistant_response_summary: "Created .github/workflows/cd.yaml. Triggers on push to main. Steps: configure-aws-credentials, ecr-login, docker build+push to ECR (tagged with git SHA and latest), download current task def, render new task def with updated image, create ECS service if not exists (uses ECS_SUBNET_IDS and ECS_SECURITY_GROUP_ID secrets), deploy with amazon-ecs-deploy-task-definition. Service name: fsl-challenge-service. Still needs ECS_SUBNET_IDS and ECS_SECURITY_GROUP_ID secrets from user."
+- files_affected: ".github/workflows/cd.yaml"
