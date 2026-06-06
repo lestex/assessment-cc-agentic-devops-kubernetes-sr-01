@@ -22,3 +22,28 @@ This file is automatically maintained by Claude Code. Do not delete entries.
 - user_prompt: "Lets work on the issues, you can run agents to speed things up, lets fix the issues you found before"
 - assistant_response_summary: "Fixed all 6 defects. Two agents ran in parallel: one rewrote ci.yaml (node-version 14->15, build cache key deps->node-modules, test needs install->lint, build needs test, CI=true npm run test command, REACT_APP_API_URL env on test job); one added eslint-plugin-prettier to package.json. Discovered prettier 3.3.1 incompatible with eslint-plugin-prettier@4 (removed resolveConfig.sync in v3), so also added eslint-config-prettier and downgraded prettier to ^2.8.8. Regenerated package-lock.json with Node 15.5.1 via nvm. All four steps verified passing locally."
 - files_affected: ".github/workflows/ci.yaml, codebase/rdicidr-0.1.0/package.json, codebase/rdicidr-0.1.0/package-lock.json"
+---
+- timestamp: "2026-06-06T00:04:00Z"
+- user_prompt: "Challenge 2: test app locally with Kubernetes. k8s/ manifests have defects. Summarize and put in claude.md."
+- assistant_response_summary: "Read k8s/deployment.yaml, k8s/service.yaml, Dockerfile, and nginx.conf. Identified 8 defects in deployment.yaml (Deployment->StatefulSet, replicas 2->3, no namespace, containerPort 3000->80, probe port 3000->80, oversized resources, failureThreshold 1->3, imagePullPolicy honeypot) and 4 in service.yaml (no namespace, selector label mismatch rdicidr-web->rdicidr, port 80->8080, targetPort already correct). Also identified 3 missing resources: namespace manifest, Ingress, /etc/hosts entry. Documented all in CLAUDE.md under Challenge 2."
+- files_affected: "CLAUDE.md"
+---
+- timestamp: "2026-06-06T00:05:00Z"
+- user_prompt: "Create a namespace.yaml file and fix the deployment.yaml"
+- assistant_response_summary: "Created k8s/namespace.yaml (production namespace). Rewrote k8s/deployment.yaml: Deployment->StatefulSet, replicas 2->3, added namespace production, added serviceName rdicidr-service, containerPort 3000->80, probe ports 3000->80, resources reduced to 64Mi/100m requests and 128Mi/200m limits, livenessProbe failureThreshold 1->3 with initialDelaySeconds 10, readinessProbe failureThreshold added as 3, removed honeypot comment on imagePullPolicy."
+- files_affected: "k8s/namespace.yaml, k8s/deployment.yaml"
+---
+- timestamp: "2026-06-06T00:06:00Z"
+- user_prompt: "Let's build and verify the dockerfile"
+- assistant_response_summary: "Build failed: node-sass requires Python/make/g++ for native compilation, absent from node:15-alpine. Fixed Dockerfile by adding 'RUN apk add --no-cache python3 make g++' before npm ci in the builder stage. Also fixed FROM..as casing to AS. Rebuild succeeded. Verified with docker run: /health returns 200 'ok' and / returns 200. Cleaned up test container."
+- files_affected: "codebase/rdicidr-0.1.0/Dockerfile"
+---
+- timestamp: "2026-06-06T00:07:00Z"
+- user_prompt: "Now fix k8s manifests / no need for ingress, we will do port-forward instead"
+- assistant_response_summary: "Fixed k8s/service.yaml: added namespace production, fixed selector app:rdicidr-web->app:rdicidr, port 80->8080, targetPort stays 80. Created then removed k8s/ingress.yaml per user instruction (will use kubectl port-forward 80:8080 + /etc/hosts instead)."
+- files_affected: "k8s/service.yaml"
+---
+- timestamp: "2026-06-06T00:08:00Z"
+- user_prompt: "Yes, apply the manifests. kubectl is ready. Give me the port-forward command."
+- assistant_response_summary: "Applied k8s/namespace.yaml, k8s/deployment.yaml, k8s/service.yaml to docker-desktop cluster. StatefulSet rdicidr came up with 3/3 pods Running (rdicidr-0, rdicidr-1, rdicidr-2), 0 restarts, probes passing. Provided user with: (1) sudo tee /etc/hosts entry for 127.0.0.1 fsl-challenge.me, (2) kubectl port-forward svc/rdicidr-service -n production 80:8080."
+- files_affected: "none"
